@@ -1,0 +1,4 @@
+numpy
+opencv-python
+pillow
+git+https://gitlab.com/DAtek/datek_utils.git
