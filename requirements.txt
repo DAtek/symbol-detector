@@ -1,3 +1,4 @@
+setuptools
 numpy
 opencv-python
 pillow

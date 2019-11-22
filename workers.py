@@ -4,13 +4,14 @@ from threading import Thread
 
 from core import *
 from settings import settings
+from typing import Optional
 
 
 class BaseWorker:
     def __init__(self):
         self._running = False
         self._finished = True
-        self._task: Task = None
+        self._task: Optional[Task] = None
 
     def loop_start(self, *args, **kwargs):
         if self._running or not self._finished:
@@ -78,6 +79,8 @@ class FrameProcessor(BaseWorker):
             FrameProcessor._cam.release()
 
     async def run(self):
+        settings.reload()
+        self._filter_property.load_from_settings(settings)
         self.init_camera()
         while self.running and self._cam.isOpened():
             point = await self.capture_point()

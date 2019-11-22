@@ -37,9 +37,7 @@ class Detector:
         self._shape_detector.save_actual(filename)
 
     def loop_start(self):
-        # manager.loop_start()
         self._frame_handler.loop_start()
 
     def loop_stop(self):
         self._frame_handler.loop_stop()
-        # manager.loop_stop()
