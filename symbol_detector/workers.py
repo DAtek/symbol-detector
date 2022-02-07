@@ -1,10 +1,14 @@
 from asyncio import sleep, create_task, run, Task
 from queue import Queue
 from threading import Thread
-
-from core import *
-from settings import settings
 from typing import Optional
+
+import cv2.cv2 as cv2
+import numpy as np
+
+from symbol_detector.core import FilterProperty, filter_image, get_center, copy_drawing, draw_lines, \
+    resize_to_standard, ceil_blur, compare_cos
+from symbol_detector.settings import config
 
 
 class BaseWorker:
@@ -49,13 +53,13 @@ class FrameProcessor(BaseWorker):
         self._callback_detect = callback_detect
         self._out_queue = out_queue
         self._filter_property = FilterProperty(
-            y_min=settings.y_min,
-            y_max=settings.y_max,
-            cb_min=settings.cb_min,
-            cb_max=settings.cb_max,
-            cr_min=settings.cr_min,
-            cr_max=settings.cr_max,
-            blur=settings.blur,
+            y_min=config.y_min,
+            y_max=config.y_max,
+            cb_min=config.cb_min,
+            cb_max=config.cb_max,
+            cr_min=config.cr_min,
+            cr_max=config.cr_max,
+            blur=config.blur,
         )
         self._NBREAK = 10
         self._points = list()
@@ -65,11 +69,11 @@ class FrameProcessor(BaseWorker):
 
     @staticmethod
     def init_camera():
-        FrameProcessor._cam = cv2.VideoCapture(settings.camera_driver)
+        FrameProcessor._cam = cv2.VideoCapture(config.camera_driver)
         FrameProcessor._cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
-        FrameProcessor._cam.set(cv2.CAP_PROP_EXPOSURE, settings.camera_exposure)
-        FrameProcessor._cam.set(cv2.CAP_PROP_FRAME_WIDTH, settings.camera_width)
-        FrameProcessor._cam.set(cv2.CAP_PROP_FRAME_HEIGHT, settings.camera_height)
+        FrameProcessor._cam.set(cv2.CAP_PROP_EXPOSURE, config.camera_exposure)
+        FrameProcessor._cam.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera_width)
+        FrameProcessor._cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height)
         ret, frame = FrameProcessor._cam.read()
         FrameProcessor.shape = frame.shape
 
@@ -79,8 +83,7 @@ class FrameProcessor(BaseWorker):
             FrameProcessor._cam.release()
 
     async def run(self):
-        settings.reload()
-        self._filter_property.load_from_settings(settings)
+        self._filter_property.load_from_settings(config)
         self.init_camera()
         while self.running and self._cam.isOpened():
             point = await self.capture_point()
@@ -116,7 +119,7 @@ class FrameProcessor(BaseWorker):
         cnts, hier = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         for i in range(len(cnts)):
             area = cv2.contourArea(cnts[i])
-            if (area > settings.area_min) & (area < settings.area_max):
+            if (area > config.area_min) & (area < config.area_max):
                 point = await get_center(cnts[i])
                 is_point = True
         return is_point, point
@@ -136,13 +139,13 @@ class ShapeDetector:
     """Recognition of shapes"""
 
     def __init__(
-            self,
-            symbols,
-            image_size,
-            im_shape,
-            ref_queue: Queue = None,
-            result_queue: Queue = None,
-            callback=None,
+        self,
+        symbols,
+        image_size,
+        im_shape,
+        ref_queue: Queue = None,
+        result_queue: Queue = None,
+        callback=None,
     ):
         super().__init__()
         self._im_shape = im_shape
@@ -168,7 +171,7 @@ class ShapeDetector:
         gray_image = resize_to_standard(gray_image, self.image_size)
         gray_image = ceil_blur(gray_image, 15, 3)
         typ, ref, diff = await compare_cos(gray_image, self.symbols)
-        recognized = diff < settings.max_rel_error
+        recognized = diff < config.max_rel_error
         if self._result_queue and recognized:
             im = np.zeros([ref.shape[0], ref.shape[1], 3], np.uint8)
             im[:, :, 1] = ref

@@ -6,19 +6,11 @@ from asyncio import sleep
 import numpy as np
 from PIL import Image, ImageTk
 
-import sampler
-import symbols
-from detector import Detector
-from settings import settings, PAD_X, PAD_Y, IMAGE_SIZE, SYMBOLS_DIR
-from workers import BaseWorker
-
-
-def update_parameters(f, sampler_parameters):
-    params = settings.read_params(f)
-    for k in sampler_parameters.keys():
-        params[k] = sampler_parameters[k]
-    settings.write_params(params, f)
-    return params
+from symbol_detector import sampler, symbols
+from symbol_detector.detector import Detector
+from symbol_detector.constants import PAD_X, PAD_Y, IMAGE_SIZE, SYMBOLS_DIR
+from symbol_detector.settings import config
+from symbol_detector.workers import BaseWorker
 
 
 class MainWindow(tkinter.Tk):
@@ -26,7 +18,7 @@ class MainWindow(tkinter.Tk):
         tkinter.Tk.__init__(self)
         self._px = PAD_X
         self._py = PAD_Y
-        self.sym_dir = "%s/%s/" % (SYMBOLS_DIR, settings.symbol_set)
+        self.sym_dir = "%s/%s/" % (SYMBOLS_DIR, config.symbol_set)
         self.symbols = symbols.read_symbols(self.sym_dir, IMAGE_SIZE)
         self.core = Detector(self.symbols)
         self.wm_title("Symbol detector")
@@ -88,7 +80,6 @@ class MainWindow(tkinter.Tk):
     def get_sample(self):
         s = sampler.Sampler()
         s.show_camera()
-        settings.reload()
         self._window_help.destroy()
 
     def save_current(self):
@@ -114,7 +105,7 @@ class WindowSymbolSaver(tkinter.Toplevel):
         self._px = PAD_X
         self._py = PAD_Y
         self.master = master
-        super().__init__(self)
+        super().__init__(master)
         self.wm_title("Save current symbol")
         self.geometry("%dx%d%+d%+d" % (300, 100, 500, 300))
         tkinter.Label(self, text="Symbol name:").grid(
@@ -163,13 +154,13 @@ class WindowSymbolsSelector(tkinter.Toplevel):
         )
         self.geometry("%dx%d%+d%+d" % (300, 60, 500, 300))
         self.combo_syms = ttk.Combobox(self, width=30)
-        self.combo_syms["values"] = os.listdir("syms")
+        self.combo_syms["values"] = [path.name for path in SYMBOLS_DIR.iterdir()]
         self.combo_syms.grid(row=2, column=2, padx=self._px, pady=self._py)
         self.combo_syms.bind("<<ComboboxSelected>>", self.select_settings)
 
     def select_settings(self, _):
-        settings.symbol_set = self.combo_syms.get()
-        settings.save()
+        config.symbol_set = self.combo_syms.get()
+        config.save()
         self.master.sym_dir = "%s/%s/" % (SYMBOLS_DIR, self.combo_syms.get())
         self.master.symbols = symbols.read_symbols(self.master.sym_dir, IMAGE_SIZE)
         self.destroy()
@@ -227,3 +218,9 @@ class FrameImage(tkinter.Label, BaseWorker):
                 self.photo_next = None
             await sleep(0.01)
         self.run_end()
+
+
+def run():
+    config.load()
+    app = MainWindow()
+    app.mainloop()

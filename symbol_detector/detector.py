@@ -1,7 +1,7 @@
 from queue import Queue
 
-from settings import IMAGE_SIZE
-from workers import FrameProcessor, ShapeDetector
+from symbol_detector.constants import IMAGE_SIZE
+from symbol_detector.workers import FrameProcessor, ShapeDetector
 
 
 class Detector:

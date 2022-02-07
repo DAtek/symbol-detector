@@ -1,9 +1,7 @@
 import os
-
-import core as cm
-from core import cv2
-
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+import cv2.cv2 as cv2
+from symbol_detector import core
+from symbol_detector.constants import BASE_DIR
 
 
 def get_next_nr(symbol_name, symbols):
@@ -29,8 +27,8 @@ def read_symbols(directory, size):
         key = file[:i]
         im0 = cv2.imread(os.path.join(BASE_DIR, directory, file))
         im = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)
-        im = cm.resize_to_standard(im, size)
-        im = cm.ceil_blur(im, 15, 3)
+        im = core.resize_to_standard(im, size)
+        im = core.ceil_blur(im, 15, 3)
         if not symbols.get(key):
             symbols[key] = list()
         symbols[key].append((im, file))

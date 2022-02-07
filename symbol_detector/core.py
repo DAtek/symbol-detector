@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 
-import cv2
+import cv2.cv2 as cv2
 import numpy as np
-from datek_utils.da_config import Config
+
+from symbol_detector.settings import Config
 
 
 @dataclass
@@ -15,9 +16,9 @@ class FilterProperty:
     cr_max: int
     blur: int
 
-    def load_from_settings(self, settings: Config):
+    def load_from_settings(self, config: Config):
         for key in self.__dict__.keys():
-            self.__setattr__(key, settings.__getattribute__(key))
+            setattr(self, key, getattr(config, key))
 
 
 async def compare_absolute_diff(gray_image, symbols, max_diff):

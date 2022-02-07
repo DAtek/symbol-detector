@@ -1,0 +1,23 @@
+{
+  "filtering_parameters": {
+    "y_min": 32,
+    "y_max": 47,
+    "cb_min": 105,
+    "cb_max": 112,
+    "cr_min": 180,
+    "cr_max": 204,
+    "area_max": 3000,
+    "area_min": 50,
+    "blur": 9
+  },
+  "camera": {
+    "driver": "/dev/video0",
+    "exposure": 540.0,
+    "width": 800,
+    "height": 600
+  },
+  "detecting_options": {
+    "max_rel_error": 20.0,
+    "symbol_set": "ABC"
+  }
+}

@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "symbol-detector"
+version = "0.1.0"
+description = ""
+authors = ["Attila Dudas <dudasa7@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.22.2"
+opencv-python = "^4.5.5"
+Pillow = "^9.0.1"
+pydantic = "^1.9.0"
+
+[tool.poetry.scripts]
+symbol-detector-gui = "symbol_detector.gui:run"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,4 +1,5 @@
 /.idea
 *.pyc
-/.env
+/.venv
 error.log
+settings.json

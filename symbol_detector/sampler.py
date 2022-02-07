@@ -12,9 +12,10 @@
 # middle click : calculating filter parameters
 #
 
-import core as cm
-from core import cv2, np
-from settings import settings
+from symbol_detector import core
+import numpy as np
+from symbol_detector.settings import config
+import cv2.cv2 as cv2
 
 
 class Sampler:
@@ -55,16 +56,16 @@ class Sampler:
                 [self.im_show.shape[0], self.im_show.shape[1], 1], np.uint8
             )
             cv2.circle(self._map, self._CP, self._radius, 255, -1)
-            self._points = cm.my_contour(self._map)
+            self._points = core.my_contour(self._map)
             self._calc_params(self.im_y_cr_cb, self._points)
             cv2.imshow("camera", self.im_show)
 
     def show_camera(self):
-        cam = cv2.VideoCapture(settings.camera_driver)
+        cam = cv2.VideoCapture(config.camera_driver)
         cam.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)
-        cam.set(cv2.CAP_PROP_EXPOSURE, settings.camera_exposure)
-        cam.set(cv2.CAP_PROP_FRAME_WIDTH, settings.camera_width)
-        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, settings.camera_height)
+        cam.set(cv2.CAP_PROP_EXPOSURE, config.camera_exposure)
+        cam.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera_width)
+        cam.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera_height)
         self._exposure = cam.get(cv2.CAP_PROP_EXPOSURE)
         ret, self.im = cam.read()
         self.im = cv2.flip(self.im, 1)
@@ -125,15 +126,15 @@ class Sampler:
             self.save_settings()
 
     def save_settings(self):
-        settings.blur = self._ret["blur"]
-        settings.camera_exposure = self._ret["exposure"]
-        settings.y_min = self._ret["y_min"]
-        settings.y_max = self._ret["y_max"]
-        settings.cr_min = self._ret["cr_min"]
-        settings.cr_max = self._ret["cr_max"]
-        settings.cb_min = self._ret["cb_min"]
-        settings.cb_max = self._ret["cb_max"]
-        settings.save()
+        config.blur = self._ret["blur"]
+        config.camera_exposure = self._ret["exposure"]
+        config.y_min = self._ret["y_min"]
+        config.y_max = self._ret["y_max"]
+        config.cr_min = self._ret["cr_min"]
+        config.cr_max = self._ret["cr_max"]
+        config.cb_min = self._ret["cb_min"]
+        config.cb_max = self._ret["cb_max"]
+        config.save()
 
     def _calc_params(self, image, points):
         im = image.copy()
